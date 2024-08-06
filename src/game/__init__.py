@@ -1,3 +1,3 @@
 from .board import Board
-from .game_manager import Game
+from .base_game import BaseGame
 from .player import Player

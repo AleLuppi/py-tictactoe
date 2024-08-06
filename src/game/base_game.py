@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Tuple
 
 from game._game_item import GameItem
 from game.board import Board
@@ -16,7 +17,7 @@ class GameStatus(str, Enum):
     ERROR = "error"
 
 
-class Game(GameItem):
+class BaseGame(GameItem):
     def __init__(self, board_size: int = 3):
         self._board = Board(board_size)
         self._players = []
@@ -37,15 +38,30 @@ class Game(GameItem):
     def num_players(self) -> int:
         return len(self._players)
 
+    @property
+    def table(self) -> Tuple[Tuple[str, ...], ...]:
+        """
+        Get a nested list representation of the board.
+
+        :return: Nested list representation of the board.
+        """
+        return self.board.as_table()
+
     def reset(self):
         self._board.reset()
         [p.reset() for p in self._players]
         self._players = []
         self._status = GameStatus.READY
 
+    @staticmethod
+    def get_user_play(player: Player) -> str:
+        ...
+
     def add_player(self, symbol: str | None = None, name: str | None = None):
         # Create player with new symbol
-        new_player = Player(symbol=symbol or self._get_next_player_symbol(), name=name)
+        new_player = Player(symbol=symbol or self._get_next_player_symbol(),
+                            name=name,
+                            get_user_play=self.get_user_play)
         assert new_player.symbol not in [p.symbol for p in self._players], "New player symbol is already in use."
 
         self._players.append(new_player)
@@ -87,14 +103,9 @@ class Game(GameItem):
 
 if __name__ == '__main__':
     # Init game
-    game = Game()
+    game = BaseGame()
     for i in range(2):
         game.add_player()
-
-    # FIXME: delete
-    # Force player to move
-    for p in game._players:
-        p.play = lambda: "B2"
 
     # Step game
     while game.step():
