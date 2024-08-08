@@ -93,6 +93,9 @@ class BaseGame(GameItem):
     def _get_next_player_symbol(self):
         return _DEFAULT_SYMBOLS[self.num_players % len(_DEFAULT_SYMBOLS)]
 
+    def _get_player_by_symbol(self, symbol: str) -> Player | None:
+        return next((player for player in self._players if player.symbol == symbol), None)
+
     def step(self) -> bool:
         """
         Execute a single step of the game.
@@ -113,18 +116,36 @@ class BaseGame(GameItem):
         return True
 
     def get_winner(self) -> Player | None:
-        # FIXME: implement
-        pass
+        """
+        Get the winner of the game, if any.
 
-    def game_over(self):
+        :return: The winner of the game, or None.
+        """
+        # Check if latest move creates a line in the board
+        last_cell, last_symbol = self.board.last_cell_id, self.board.last_player_id
+        connected_cells = self.board.get_connected_cells(last_cell)
+
+        connected_symbols = ["".join(cells.values()) for cells in connected_cells]
+        if any(last_symbol * 3 in cs for cs in connected_symbols):
+            return self._get_player_by_symbol(last_symbol)
+
+    def game_over(self) -> bool:
+        """
+        Check if the game is over.
+
+        :return: True if the game is over, False otherwise.
+        """
         winner = self.get_winner()
         if winner:
             self._status = GameStatus.OVER
+            return True
+        return False
 
 
 if __name__ == '__main__':
     # Init game
     game = BaseGame()
+    game.get_user_play = lambda player: input("Your turn: ")  # Allow game to get user input
     for i in range(2):
         game.add_player()
 

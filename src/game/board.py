@@ -5,14 +5,16 @@ from ._game_item import GameItem
 
 
 class Board(GameItem):
-    def __init__(self, size: Iterable[int] | int = 3):
+    def __init__(self, size: Iterable[int] | int = 3, win_on: int = None):
         # Currently, size is supported up to 9x9, while min is always 3x3
         size = tuple(size) if isinstance(size, Iterable) else (size, size)
         size = tuple(max(3, min(int(s), 9)) for s in size)
+        win_on = max(win_on or min(size), 3)
 
         # Init attributes
         self._size = size
-        self._plays: Dict[Tuple[int, int], str] = {}
+        self._plays: Dict[Tuple[int, ...], str] = {}
+        self._win_on = win_on
 
         # Ensure reset board
         self.reset()
@@ -43,6 +45,35 @@ class Board(GameItem):
         :return: Current turn number.
         """
         return len(self._plays)
+
+    @property
+    def last_cell_position(self) -> Tuple[int, ...]:
+        """
+        Get the last cell played.
+
+        :return:
+        """
+        return tuple(self._plays.keys())[-1] if self._plays else None
+
+    @property
+    def last_cell_id(self) -> str:
+        """
+        Get the ID of the last cell played.
+
+        :return:
+        """
+        return self._cell_pos_to_id(*self.last_cell_position) if self.last_cell_position else None
+
+    @property
+    def last_player_id(self):
+        """
+        Get the last symbol played.
+        :return:
+        """
+        if self.last_cell_position:
+            return self._plays.get(self.last_cell_position)
+        else:
+            return None
 
     def reset(self):
         """
@@ -103,6 +134,34 @@ class Board(GameItem):
             raise ValueError(f"Selected cell {row_str}{col_str} is out of board's bounds.")
 
         return row, col
+
+    def get_connected_cells(self, cell_id: str, max_dist: int = None) -> Iterable[Dict[str, str]]:
+        """
+        Get a list of cells that are connected to the given cell in any possible direction.
+
+        :param cell_id: The cell id.
+        :param max_dist: The maximum distance from the cell.
+        :return: Iterable of nearby cells.
+        """
+        row, col = self._get_cell_id(cell_id)
+        if max_dist is None:
+            max_dist = self._win_on - 1
+
+        # Get connected cells
+        row_connected = [(r, col) for r in range(row - max_dist, row + max_dist + 1)]
+        col_connected = [(row, c) for c in range(col - max_dist, col + max_dist + 1)]
+        diag1_connected = [(row + i, col + i) for i in range(-max_dist, max_dist + 1)]
+        diag2_connected = [(row + i, col - i) for i in range(-max_dist, max_dist + 1)]
+        all_connections = [
+            {self._cell_pos_to_id(*k): self._plays.get(k, ' ') for k in connection
+             if 0 <= k[0] < self.size[0] and 0 <= k[1] < self.size[1]}
+            for connection in [row_connected, col_connected, diag1_connected, diag2_connected]
+        ]
+
+        return all_connections
+
+    def _cell_pos_to_id(self, row: int, col: int) -> str:
+        return self._n2row(row) + self._n2col(col)
 
     @staticmethod
     def _n2row(n: int) -> str:

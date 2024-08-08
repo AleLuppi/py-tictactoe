@@ -1,6 +1,7 @@
 import curses
 
 from game import BaseGame, Player
+from game.base_game import GameStatus
 
 
 class CliGame(BaseGame):
@@ -12,6 +13,8 @@ class CliGame(BaseGame):
     TEXT_DEFAULT_PLAYER_NAME = "Player {}"
     TEXT_USER_TURN = "{}'s turn."
     TEXT_USER_INPUT = "Select cell where to place symbol \"{}\": "
+    TEXT_WINNER = "{} is the winner!"
+    TEXT_WAIT_KEY = "(Press any key to continue...)"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,6 +30,14 @@ class CliGame(BaseGame):
 
     def add_player(self, symbol: str | None = None, name: str | None = None):
         super().add_player(symbol, name or self.TEXT_DEFAULT_PLAYER_NAME.format(self.num_players + 1))
+
+    def reset_preserve_players(self):
+        """
+        Reset the game preserving players.
+        """
+        players = self._players
+        self.reset()
+        self._players = players
 
     def start(self):
         """
@@ -49,12 +60,16 @@ class CliGame(BaseGame):
         """
         Play the game by taking turns among players.
         """
-        first_iter = True
-        while first_iter or self.step():
-            first_iter = False
+        while True:
             self._display_clean()
             self._display_board(self.TABLE_TOP_PAD)
-            self._display_user_turn(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
+            if self.status in [GameStatus.READY, GameStatus.ONGOING]:
+                self._display_user_turn(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
+                self.step()
+            else:
+                self._display_winner(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
+                self._display_wait_key(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 2)
+                self.reset_preserve_players()
 
     def _display_clean(self):
         """
@@ -86,13 +101,29 @@ class CliGame(BaseGame):
         """
         Display current user turn and ask for user input if necessary.
 
-        :param from_line: screen line where to start displaying the board.
+        :param from_line: screen line where to start displaying the text.
         """
         if not self._stdscr:
             return
         self._stdscr.addstr(from_line, 0, self.TEXT_USER_TURN.format(self.current_player.name))
         if self.current_player.is_human:
             self._stdscr.addstr(from_line + 1, 0, self.TEXT_USER_INPUT.format(self.current_player.symbol))
+
+    def _display_winner(self, from_line: int = 0):
+        """
+        Display winner message.
+
+        :param from_line: screen line where to start displaying the text.
+        """
+        if not self._stdscr:
+            return
+        self._stdscr.addstr(from_line, 0, self.TEXT_WINNER.format(self.get_winner().name))
+
+    def _display_wait_key(self, from_line: int = 0):
+        if not self._stdscr:
+            return
+        self._stdscr.addstr(from_line, 0, self.TEXT_WAIT_KEY)
+        return self._stdscr.getkey()
 
 
 if __name__ == '__main__':
