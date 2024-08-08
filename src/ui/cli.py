@@ -10,11 +10,13 @@ class CliGame(BaseGame):
     TABLE_TOP_PAD = 1
 
     # TODO: move to locale dict
+    TEXT_GAME_TITLE = "TIC TAC TOE"
     TEXT_DEFAULT_PLAYER_NAME = "Player {}"
     TEXT_USER_TURN = "{}'s turn."
     TEXT_USER_INPUT = "Select cell where to place symbol \"{}\": "
     TEXT_WINNER = "{} is the winner!"
-    TEXT_WAIT_KEY = "(Press any key to continue...)"
+    TEXT_WAIT_KEY = "Press any key to restart... "
+    TEXT_CLOSE_GAME = "(Press Ctrl+C to exit)"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,6 +65,7 @@ class CliGame(BaseGame):
         while True:
             self._display_clean()
             self._display_board(self.TABLE_TOP_PAD)
+            self._display_text(self.TEXT_CLOSE_GAME, self.TABLE_TOP_PAD + self.board_size[0] * 2 + 3)
             if self.status in [GameStatus.READY, GameStatus.ONGOING]:
                 self._display_user_turn(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
                 self.step()
@@ -97,6 +100,17 @@ class CliGame(BaseGame):
             if row_num < size[0] - 1:
                 self._stdscr.addstr(from_line + row_num * 2 + 2, self.TABLE_LEFT_PAD + 2, "--+---+--")
 
+    def _display_text(self, text: str, from_line: int = 0):
+        """
+        Display text on screen.
+
+        :param text: Text to display.
+        :param from_line: screen line where to start displaying the text.
+        """
+        if not self._stdscr:
+            return
+        self._stdscr.addstr(from_line, 0, text)
+
     def _display_user_turn(self, from_line: int = 0):
         """
         Display current user turn and ask for user input if necessary.
@@ -105,9 +119,9 @@ class CliGame(BaseGame):
         """
         if not self._stdscr:
             return
-        self._stdscr.addstr(from_line, 0, self.TEXT_USER_TURN.format(self.current_player.name))
+        self._display_text(self.TEXT_USER_TURN.format(self.current_player.name), from_line)
         if self.current_player.is_human:
-            self._stdscr.addstr(from_line + 1, 0, self.TEXT_USER_INPUT.format(self.current_player.symbol))
+            self._display_text(self.TEXT_USER_INPUT.format(self.current_player.symbol), from_line + 1)
 
     def _display_winner(self, from_line: int = 0):
         """
@@ -115,14 +129,17 @@ class CliGame(BaseGame):
 
         :param from_line: screen line where to start displaying the text.
         """
-        if not self._stdscr:
-            return
-        self._stdscr.addstr(from_line, 0, self.TEXT_WINNER.format(self.get_winner().name))
+        winner = self.get_winner()
+        if winner:
+            self._display_text(self.TEXT_WINNER.format(self.get_winner().name), from_line)
 
     def _display_wait_key(self, from_line: int = 0):
-        if not self._stdscr:
-            return
-        self._stdscr.addstr(from_line, 0, self.TEXT_WAIT_KEY)
+        """
+        Display wait key message.
+
+        :param from_line: screen line where to start displaying the text.
+        """
+        self._display_text(self.TEXT_WAIT_KEY, from_line, )
         return self._stdscr.getkey()
 
 
