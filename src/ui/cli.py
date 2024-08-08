@@ -15,8 +15,10 @@ class CliGame(BaseGame):
     TEXT_USER_TURN = "{}'s turn."
     TEXT_USER_INPUT = "Select cell where to place symbol \"{}\": "
     TEXT_WINNER = "{} is the winner!"
-    TEXT_WAIT_KEY = "Press any key to restart... "
+    TEXT_WAIT_KEY = "Press any key to continue... "
     TEXT_CLOSE_GAME = "(Press Ctrl+C to exit)"
+    TEXT_PLAY_ERROR = ("Selected cell is invalid, or already occupied by another user.\n"
+                       "Please type your preferred cell location like: \"a1\".")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,7 +70,11 @@ class CliGame(BaseGame):
             self._display_text(self.TEXT_CLOSE_GAME, self.TABLE_TOP_PAD + self.board_size[0] * 2 + 3)
             if self.status in [GameStatus.READY, GameStatus.ONGOING]:
                 self._display_user_turn(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
-                self.step()
+                try:
+                    self.step()
+                except ValueError:
+                    self._display_error(self.TEXT_PLAY_ERROR, 1)
+                    self._display_wait_key(3)
             else:
                 self._display_winner(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 1)
                 self._display_wait_key(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 2)
@@ -141,6 +147,15 @@ class CliGame(BaseGame):
         """
         self._display_text(self.TEXT_WAIT_KEY, from_line, )
         return self._stdscr.getkey()
+
+    def _display_error(self, text: str, from_line: int = 0):
+        """
+        Display error message to user.
+
+        :param from_line: screen line where to start displaying the text.
+        """
+        self._display_clean()
+        self._display_text(text, from_line)
 
 
 if __name__ == '__main__':

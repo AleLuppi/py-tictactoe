@@ -122,7 +122,7 @@ class Board(GameItem):
         :return: The cleaned cell id.
         """
         # Ensure cell_id is in format "[a-z][1-9]"
-        cell_id_match = re.match(r"([a-z])\s*([1-9])", cell_id.lower())
+        cell_id_match = re.match(r"\s*([a-z])\s*([1-9])\s*", cell_id.lower())
         if not cell_id_match:
             raise ValueError(f"Invalid cell id. Expected \"[a-z][1-9]\", got: {cell_id}")
 
