@@ -139,6 +139,12 @@ class BaseGame(GameItem):
         if winner:
             self._status = GameStatus.OVER
             return True
+
+        draw = self.board.full
+        if draw:
+            self._status = GameStatus.OVER
+            return True
+
         return False
 
 

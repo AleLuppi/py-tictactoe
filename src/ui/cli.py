@@ -17,6 +17,7 @@ class CliGame(BaseGame):
     TEXT_USER_TURN = "{}'s turn."
     TEXT_USER_INPUT = "Select cell where to place symbol \"{}\": "
     TEXT_WINNER = "{} is the winner!"
+    TEXT_DRAW = "It's a draw!"
     TEXT_WAIT_KEY = "Press any key to continue... "
     TEXT_CLOSE_GAME = "(Press Ctrl+C to exit)"
     TEXT_PLAY_ERROR = ("Selected cell is invalid, or already occupied by another user.\n"
@@ -141,8 +142,7 @@ class CliGame(BaseGame):
         :param from_line: screen line where to start displaying the text.
         """
         winner = self.get_winner()
-        if winner:
-            self._display_text(self.TEXT_WINNER.format(self.get_winner().name), from_line)
+        self._display_text(self.TEXT_WINNER.format(self.get_winner().name) if winner else self.TEXT_DRAW, from_line)
 
     def _display_wait_key(self, from_line: int = 0):
         """

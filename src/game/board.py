@@ -38,6 +38,15 @@ class Board(GameItem):
         return {self._n2row(k[0]) + self._n2col(k[1]): v for k, v in self._plays.items()}
 
     @property
+    def full(self):
+        """
+        Check if the board is full.
+
+        :return: True if the board is full, False otherwise.
+        """
+        return len(self._plays) == self._size[0] * self._size[1]
+
+    @property
     def turn(self) -> int:
         """
         Get the current turn number.
