@@ -105,7 +105,7 @@ class CliGame(BaseGame):
             self._display_text(chr(ord('a') + row_num) + " " + " | ".join(col or ' ' for col in row),
                                from_line + row_num * 2 + 1, self.TABLE_LEFT_PAD, )
             if row_num < size[0] - 1:
-                self._display_text("--+---+--", from_line + row_num * 2 + 2, self.TABLE_LEFT_PAD + 2)
+                self._display_text("--+-" * (size[1] - 1) + '-', from_line + row_num * 2 + 2, self.TABLE_LEFT_PAD + 2)
 
     def _display_text(self, text: str, from_line: int = 0, offset: int = 0):
         """

@@ -5,16 +5,16 @@ from ._game_item import GameItem
 
 
 class Board(GameItem):
-    def __init__(self, size: Union[Iterable[int], int] = 3, win_on: int = None):
+    def __init__(self, size: Union[Iterable[int], int] = 3, win_group: int = None):
         # Currently, size is supported up to 9x9, while min is always 3x3
         size = tuple(size) if isinstance(size, Iterable) else (size, size)
         size = tuple(max(3, min(int(s), 9)) for s in size)
-        win_on = max(win_on or min(size), 3)
+        win_group = max(win_group or min(size), 3)
 
         # Init attributes
         self._size = size
         self._plays: Dict[Tuple[int, ...], str] = {}
-        self._win_on = win_on
+        self._win_group = win_group
 
         # Ensure reset board
         self.reset()
@@ -36,6 +36,15 @@ class Board(GameItem):
         :return: Board plays.
         """
         return {self._n2row(k[0]) + self._n2col(k[1]): v for k, v in self._plays.items()}
+
+    @property
+    def win_group(self):
+        """
+        Get the number of nearby symbols that are required to win.
+
+        :return: Win group size.
+        """
+        return self._win_group
 
     @property
     def full(self):
@@ -154,7 +163,7 @@ class Board(GameItem):
         """
         row, col = self._get_cell_id(cell_id)
         if max_dist is None:
-            max_dist = self._win_on - 1
+            max_dist = self._win_group - 1
 
         # Get connected cells
         row_connected = [(r, col) for r in range(row - max_dist, row + max_dist + 1)]

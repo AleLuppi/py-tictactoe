@@ -18,8 +18,8 @@ class GameStatus(str, Enum):
 
 
 class BaseGame(GameItem):
-    def __init__(self, board_size: int = 3):
-        self._board = Board(board_size)
+    def __init__(self, board_size: int = 3, win_group: int = None):
+        self._board = Board(board_size, win_group=win_group)
         self._players = []
         self._status: GameStatus = GameStatus.INIT
 
@@ -33,6 +33,10 @@ class BaseGame(GameItem):
     @property
     def board_size(self) -> Tuple[int, ...]:
         return self.board.size
+
+    @property
+    def win_group(self):
+        return self.board.win_group
 
     @property
     def turn(self):
@@ -126,7 +130,7 @@ class BaseGame(GameItem):
         connected_cells = self.board.get_connected_cells(last_cell)
 
         connected_symbols = ["".join(cells.values()) for cells in connected_cells]
-        if any(last_symbol * 3 in cs for cs in connected_symbols):
+        if any(last_symbol * self.win_group in cs for cs in connected_symbols):
             return self._get_player_by_symbol(last_symbol)
 
     def game_over(self) -> bool:
