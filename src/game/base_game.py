@@ -31,12 +31,24 @@ class BaseGame(GameItem):
         return self._board
 
     @property
+    def board_size(self) -> Tuple[int, ...]:
+        return self.board.size
+
+    @property
+    def turn(self):
+        return self.board.turn
+
+    @property
     def status(self) -> GameStatus:
         return self._status
 
     @property
     def num_players(self) -> int:
         return len(self._players)
+
+    @property
+    def current_player(self) -> Player:
+        return self._players[self.turn % self.num_players]
 
     @property
     def table(self) -> Tuple[Tuple[str, ...], ...]:
@@ -55,9 +67,21 @@ class BaseGame(GameItem):
 
     @staticmethod
     def get_user_play(player: Player) -> str:
+        """
+        Ask user one target cell.
+
+        :param player: The player that shall move.
+        :return: User's move.
+        """
         ...
 
     def add_player(self, symbol: str | None = None, name: str | None = None):
+        """
+        Add a new player to the game.
+
+        :param symbol: Unique player symbol.
+        :param name: Name of the player.
+        """
         # Create player with new symbol
         new_player = Player(symbol=symbol or self._get_next_player_symbol(),
                             name=name,
@@ -78,12 +102,9 @@ class BaseGame(GameItem):
         # Set playing status
         self._status = GameStatus.ONGOING
 
-        # Get playing player
-        player = self._players[self.board.turn % self.num_players]
-
         # Do one move
-        move = player.play()
-        self.board.add_play(move, player.symbol)
+        move = self.current_player.play()
+        self.board.add_play(move, self.current_player.symbol)
 
         # Check if game is over
         if self.game_over():
