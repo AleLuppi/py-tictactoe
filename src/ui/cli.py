@@ -1,4 +1,5 @@
 import curses
+import sys
 
 from game import BaseGame, Player
 from game.base_game import GameStatus
@@ -19,6 +20,7 @@ class CliGame(BaseGame):
     TEXT_CLOSE_GAME = "(Press Ctrl+C to exit)"
     TEXT_PLAY_ERROR = ("Selected cell is invalid, or already occupied by another user.\n"
                        "Please type your preferred cell location like: \"a1\".")
+    TEXT_SMALL_DISPLAY = "Terminal window is too small. Please try enlarging it."
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -94,28 +96,30 @@ class CliGame(BaseGame):
 
         :param from_line: screen line where to start displaying the board.
         """
-        if not self._stdscr:
-            return
-
         table = self.board.as_table()
         size = self.board.size
-        self._stdscr.addstr(from_line, self.TABLE_LEFT_PAD + 2, (" " * 3).join(str(i) for i in range(1, size[1] + 1)))
+        self._display_text((" " * 3).join(str(i) for i in range(1, size[1] + 1)), from_line, self.TABLE_LEFT_PAD + 2)
         for row_num, row in enumerate(table):
-            self._stdscr.addstr(from_line + row_num * 2 + 1, self.TABLE_LEFT_PAD,
-                                chr(ord('a') + row_num) + " " + " | ".join(col or ' ' for col in row))
+            self._display_text(chr(ord('a') + row_num) + " " + " | ".join(col or ' ' for col in row),
+                               from_line + row_num * 2 + 1, self.TABLE_LEFT_PAD, )
             if row_num < size[0] - 1:
-                self._stdscr.addstr(from_line + row_num * 2 + 2, self.TABLE_LEFT_PAD + 2, "--+---+--")
+                self._display_text("--+---+--", from_line + row_num * 2 + 2, self.TABLE_LEFT_PAD + 2)
 
-    def _display_text(self, text: str, from_line: int = 0):
+    def _display_text(self, text: str, from_line: int = 0, offset: int = 0):
         """
         Display text on screen.
 
         :param text: Text to display.
         :param from_line: screen line where to start displaying the text.
+        :param offset: screen column where to start displaying the text.
         """
         if not self._stdscr:
             return
-        self._stdscr.addstr(from_line, 0, text)
+        try:
+            self._stdscr.addstr(from_line, offset, text)
+        except curses.error:
+            print(self.TEXT_SMALL_DISPLAY)
+            sys.exit(1)
 
     def _display_user_turn(self, from_line: int = 0):
         """
