@@ -1,5 +1,6 @@
 import curses
 import sys
+from typing import Optional
 
 from game import BaseGame, Player
 from game.base_game import GameStatus
@@ -34,7 +35,7 @@ class CliGame(BaseGame):
         curses.noecho()
         return user_play
 
-    def add_player(self, symbol: str | None = None, name: str | None = None):
+    def add_player(self, symbol: Optional[str] = None, name: Optional[str] = None):
         super().add_player(symbol, name or self.TEXT_DEFAULT_PLAYER_NAME.format(self.num_players + 1))
 
     def reset_preserve_players(self):

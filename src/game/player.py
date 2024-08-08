@@ -1,10 +1,10 @@
-from typing import Callable
+from typing import Callable, Optional
 
 from ._game_item import GameItem
 
 
 class Player(GameItem):
-    def __init__(self, symbol: str, name: str | None = None, human: bool = True,
+    def __init__(self, symbol: str, name: Optional[str] = None, human: bool = True,
                  get_user_play: Callable[["Player"], str] = None):
         self._symbol = symbol
         self._name = name

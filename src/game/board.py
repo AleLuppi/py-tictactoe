@@ -1,11 +1,11 @@
-from typing import Dict, Tuple, Iterable
+from typing import Dict, Tuple, Iterable, Union
 import re
 
 from ._game_item import GameItem
 
 
 class Board(GameItem):
-    def __init__(self, size: Iterable[int] | int = 3, win_on: int = None):
+    def __init__(self, size: Union[Iterable[int], int] = 3, win_on: int = None):
         # Currently, size is supported up to 9x9, while min is always 3x3
         size = tuple(size) if isinstance(size, Iterable) else (size, size)
         size = tuple(max(3, min(int(s), 9)) for s in size)

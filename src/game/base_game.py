@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple
+from typing import Tuple, Optional
 
 from game._game_item import GameItem
 from game.board import Board
@@ -75,7 +75,7 @@ class BaseGame(GameItem):
         """
         ...
 
-    def add_player(self, symbol: str | None = None, name: str | None = None):
+    def add_player(self, symbol: Optional[str] = None, name: Optional[str] = None):
         """
         Add a new player to the game.
 
@@ -93,7 +93,7 @@ class BaseGame(GameItem):
     def _get_next_player_symbol(self):
         return _DEFAULT_SYMBOLS[self.num_players % len(_DEFAULT_SYMBOLS)]
 
-    def _get_player_by_symbol(self, symbol: str) -> Player | None:
+    def _get_player_by_symbol(self, symbol: str) -> Optional[Player]:
         return next((player for player in self._players if player.symbol == symbol), None)
 
     def step(self) -> bool:
@@ -115,7 +115,7 @@ class BaseGame(GameItem):
 
         return True
 
-    def get_winner(self) -> Player | None:
+    def get_winner(self) -> Optional[Player]:
         """
         Get the winner of the game, if any.
 
