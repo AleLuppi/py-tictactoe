@@ -25,11 +25,14 @@ class CliGame(BaseGame):
     TEXT_SMALL_DISPLAY = "Terminal window is too small. Please try enlarging it."
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
         self._stdscr = None
 
+        super().__init__(*args, **kwargs)
+
     def get_user_play(self, player: Player) -> str:
+        if not self._stdscr:
+            return super().get_user_play(player)
+
         curses.echo()
         user_play = self._stdscr.getstr(self.TABLE_TOP_PAD + self.board_size[0] * 2 + 2,
                                         len(self.TEXT_USER_INPUT)).decode('utf-8')
@@ -38,6 +41,10 @@ class CliGame(BaseGame):
 
     def add_player(self, symbol: Optional[str] = None, name: Optional[str] = None):
         super().add_player(symbol, name or self.TEXT_DEFAULT_PLAYER_NAME.format(self.num_players + 1))
+
+    def reset(self):
+        super().reset()
+        self._display_clean()
 
     def reset_preserve_players(self):
         """
