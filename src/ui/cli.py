@@ -69,7 +69,19 @@ class CliGame(BaseGame):
         """
         self._stdscr = stdscr
         self._display_clean()
-        self.play()
+        try:
+            self.play()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.stop()
+
+    def stop(self):
+        """
+        Stop the game.
+        """
+        self.reset()
+        sys.exit(0)
 
     def play(self):
         """
